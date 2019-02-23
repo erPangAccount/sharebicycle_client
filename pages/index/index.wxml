@@ -1,0 +1,10 @@
+<!--pages/map/index.wxml-->
+<i-row class="header">
+    <i-col span="24" i-class="col-class">
+      <map id="map" longitude="{{ location ? location.longitude : '' }}" latitude="{{ location ? location.latitude : ''}}" scale="14" bindcontroltap="controltap" bindmarkertap="markertap" bindregionchange="regionchange" show-location style="width: 100%; height: {{ clientHeight ? clientHeight + 'px' : 'auto' }}">
+      <cover-view>
+        <button style='background-color: #fff' bind:tap="hanldeToUseOrFindCar">去用车或找车</button>
+      </cover-view>
+      </map>    
+    </i-col>
+  </i-row>

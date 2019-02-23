@@ -1,0 +1,104 @@
+<view class="container">
+  <view class="header">
+    <i-row wx-if="{{isUsingCar == false}}"> 
+      <i-col span="12" i-class="col-class ">
+        <i-button bind:click="handleFindCarsButtonClick" type="success" shape="circle">
+          找车 
+        </i-button>
+      </i-col>
+      <i-col span="12" i-class="col-class">
+        <i-button bind:click="handleUseCarsButtonClick" type="success" shape="circle" size="small">
+          用车
+        </i-button>
+      </i-col>
+    </i-row>
+    <i-row wx-if="{{isUsingCar == true}}">
+      <i-col span="12" i-class="col-class ">
+        <i-button bind:click="handleStopUseCarClick" type="success" shape="circle" size="large">
+          结束用车 
+        </i-button>
+      </i-col>
+      <i-col span="12" i-class="col-class ">
+        <i-button bind:click="handleReturnError" type="success" shape="circle" size="large">
+          反馈车况 
+        </i-button>
+      </i-col>
+    </i-row>
+  </view>
+  <view class="content">
+     <scroll-view scroll-y style="height:{{clientHeight ? clientHeight+'px' : 'auto'}} " bindscrolltoupper="handleFresh" bindscrolltolower="handleLoadMore" scroll-top="0" upper-threshold="50" lower-threshold="50" scroll-with-animation="true">
+      <view id="{{ index }}" class="scroll-view-item" bind:tap="handleToOrderInfo" data-id="{{ item }}"  wx:for="{{[1,2,3,4,5]}}" wx:for-index="index" wx:for-item="item">
+        <view class="item-title">
+            <view class="text-l fl-1">
+              <text>订单状态：</text>
+            </view>
+            <view class="text-r fl-1">
+              <text>进行中/已完成</text>
+            </view>
+        </view>
+        <view class="item-content">
+          <view class="item-content-title">
+            <view class="fl-1">
+              <text>订单编号: {{ index }}</text>
+            </view>
+            <view class="fl-1">
+              <text>123456789798</text>
+            </view>
+          </view>
+          <view class="item-content-content">
+              <view class="content-usetime content-item">
+                <view class="fl-1">
+                  <text>开始骑行时间:</text>
+                </view>
+                <view class="fl-1">
+                  <text>2018-02-02 23:59:59</text>
+                </view>
+              </view>
+              <view class="content-stoptime content-item">
+                <view class="fl-1">
+                  <text>停止骑行时间:</text>
+                </view>
+                <view class="fl-1">
+                  <text>2018-02-02 23:59:59</text>
+                </view>
+              </view>
+              <view class="content-mileage content-item">
+                <view class="fl-1">
+                  <text>骑行里程:</text>
+                </view>
+                <view class="fl-1">
+                  <text class="font-red"> 1.5km </text>
+                </view>
+              </view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+  <view class="bottom">
+    <i-tab-bar current="{{ currentMenu }}" bindchange="handleChange">
+      <i-tab-bar-item key="homepage" icon="homepage" current-icon="homepage_fill" title="主页"></i-tab-bar-item>
+      <i-tab-bar-item key="mine" icon="mine" current-icon="mine_fill" title="个人中心"></i-tab-bar-item>
+    </i-tab-bar>
+  </view>
+</view>
+
+<i-modal title="找 车" visible="{{ showFindCarModal }}" actions="{{ findCarModalButton }}" bind:click="handleFindCarMethod">
+    <view>请选择找车方式</view>
+</i-modal>
+<i-modal title="用 车" visible="{{ showUseCarModal }}" actions="{{ useCarModalButton }}" bind:click="handleUserCarMethod">
+    <view>请选择用车方式</view>
+</i-modal>
+<i-modal title="输入车号" visible="{{ showInputCarNumberModel }}" actions="{{ inputCarNumberModelButton }}" bind:click="handleInputCarNumberMethod">
+    <view>请输入车号</view>
+    <view>
+      <i-input value="{{ inputCarNumber }}" title="车号" placeholder="{{ inputModelTitle }}" />
+    </view>
+</i-modal>
+
+<i-modal title="订单结算" visible="{{ orderModalShow }}" actions="{{ orderModelButton }}" bind:click="handleHideOrderModel">
+    <view>此次预扣除 10 车豆；实际消费： 5 车豆 </view>
+    <view>开始时间： 2018-08-02 12：12：12</view>
+    <view>结束时间： 2018-08-02 14：14：14</view>
+    <view>里程： 12 km</view>
+</i-modal>

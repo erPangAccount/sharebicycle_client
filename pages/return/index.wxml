@@ -1,0 +1,21 @@
+<!--pages/return/index.wxml-->
+
+  <i-cell-group>
+    <i-cell title="取消订单">
+      <i-switch value="{{ isCloseOrder }}" bind:change="handleIsCloseOrderChange" size="large" slot="footer">
+        <view slot="open">是</view>
+        <view slot="close">否</view>
+      </i-switch>
+    </i-cell>
+
+    <i-cell title="车况详情">
+       <textarea auto-height placeholder="请输入车况详情！" />
+    </i-cell>
+
+    <i-cell>
+      <i-button bind:click="formSubmit" type="success" shape="circle" size="large">提 交</i-button>
+      <i-button bind:click="formReset" type="warning" shape="circle" size="large">重 置</i-button>
+    </i-cell>
+  </i-cell-group>
+
+

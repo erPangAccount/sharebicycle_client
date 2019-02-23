@@ -1,0 +1,26 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/user/index",
+    "pages/use/index",
+    "pages/order_detail/index",
+    "pages/return/index",
+    "pages/login/index"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#f8f8f9",
+    "navigationBarTitleText": "WeChat",
+    "navigationBarTextStyle": "black"
+  },
+  "networkTimeout": {
+    "request": 5000,
+    "downloadFile": 10000
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "您的位置信息将用于小程序位置接口的效果展示"
+    }
+  },
+  "debug": true
+}

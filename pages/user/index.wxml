@@ -1,0 +1,57 @@
+
+<!--pages/order.wxml-->
+<view class="container">
+  <i-row class="header">
+    <i-row class="head-img">
+      <i-col span="24">
+        <i-avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" size="large" shape="circle" wx-if="{{ hasHeadImage }}"></i-avatar>
+        <i-avatar size="large" shape="circle" wx-if="{{ !hasHeadImage }}">
+          {{ userName }}
+        </i-avatar>
+      </i-col>
+    </i-row>
+    <i-row class="head-title">
+      <i-col span="24">
+        <text>用户名称</text>
+      </i-col>
+    </i-row>
+    <i-row class="content-item">
+      <i-col span="8" i-class="content-item-title">
+        <text>性别：</text>
+      </i-col>
+      <i-col span="16" i-class="content-item-info">
+        <text>男</text>
+      </i-col>
+    </i-row>
+    <i-row class="content-item">
+      <i-col span="8" i-class="content-item-title">
+        <text>所在国家：</text>
+      </i-col>
+      <i-col span="16" i-class="content-item-info">
+        <text>中国</text>
+      </i-col>
+    </i-row>
+    <i-row class="content-item">
+      <i-col span="8" i-class="content-item-title">
+        <text>所在省份：</text>
+      </i-col>
+      <i-col span="16" i-class="content-item-info">
+        <text>重庆</text>
+      </i-col>
+    </i-row>
+    <i-row class="content-item">
+      <i-col span="8" i-class="content-item-title">
+        <text>所在城市：</text>
+      </i-col>
+      <i-col span="16" i-class="content-item-info">
+        <text>重庆</text>
+      </i-col>
+    </i-row>
+  </i-row>
+  <i-row class="bottom">
+    <i-tab-bar current="{{ currentMenu }}" bindchange="handleChange">
+      <i-tab-bar-item key="homepage" icon="homepage" current-icon="homepage_fill" title="主页"></i-tab-bar-item>
+      <i-tab-bar-item key="mine" icon="mine" current-icon="mine_fill" title="个人中心"></i-tab-bar-item>
+    </i-tab-bar>
+  </i-row>
+</view>

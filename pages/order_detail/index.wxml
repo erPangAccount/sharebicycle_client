@@ -1,0 +1,53 @@
+<!--pages/order_detail/index.wxml-->
+<view class="container">
+  <view class='header'>
+    <view class="item-title">
+            <view class="text-l fl-1">
+              <text>订单状态：</text>
+            </view>
+            <view class="text-r fl-1">
+              <text>进行中/已完成</text>
+            </view>
+        </view>
+        <view class="item-content">
+          <view class="item-content-title">
+            <view class="fl-1">
+              <text>订单编号: {{ index }}</text>
+            </view>
+            <view class="fl-1">
+              <text>123456789798</text>
+            </view>
+          </view>
+          <view class="item-content-content">
+              <view class="content-usetime content-item">
+                <view class="fl-1">
+                  <text>开始骑行时间:</text>
+                </view>
+                <view class="fl-1">
+                  <text>2018-02-02 23:59:59</text>
+                </view>
+              </view>
+              <view class="content-stoptime content-item">
+                <view class="fl-1">
+                  <text>停止骑行时间:</text>
+                </view>
+                <view class="fl-1">
+                  <text>2018-02-02 23:59:59</text>
+                </view>
+              </view>
+              <view class="content-mileage content-item">
+                <view class="fl-1">
+                  <text>骑行里程:</text>
+                </view>
+                <view class="fl-1">
+                  <text class="font-red"> 1.5km </text>
+                </view>
+              </view>
+          </view>
+        </view>
+  </view>
+  <view class='content'>
+     <map id="map" longitude="{{ location ? location.longitude : '' }}" latitude="{{ location ? location.latitude : ''}}"  scale="14" show-location polyline="{{ polyline ? polyline : '' }}" style="width: 100%; height: {{ clientHeight ? clientHeight + 'px' : 'auto' }}">
+     </map>
+  </view>
+</view>
