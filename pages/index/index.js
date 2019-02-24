@@ -1,19 +1,18 @@
 //index.js
 //获取应用实例
 const app = getApp()
-const utils = require('../../utils/util.js')
+const utils = require('../../utils/util.js');
+const { $Toast } = require('../../dist/base/index');
 
 Page({
   data: {
     clientHeight: app.globalData.clientHeight,
-    isUseingCar: false,
     beforModel: "",
     inputModelTitle: "",
     location: {}
   },
   //事件处理函数
   onLoad: function () {
-    this.getLocation()
     if (app.globalData.userInfo) {
       this.setData({
         userInfo: app.globalData.userInfo,
@@ -41,17 +40,25 @@ Page({
       })
     }
   },
+  onShow: function()
+  {
+    var nowOrderInfo = wx.getStorageSync('nowOrderInfo');
+    if (nowOrderInfo) {
+      app.globalData.isUsingCar = true;
+      wx.navigateTo({
+        url: '../use/index',
+      })
+    } else {
+      app.globalData.isUsingCar = false;
+      this.getLocation();
+    }
+  },
   getUserInfo: function (e) {
     console.log(e)
     app.globalData.userInfo = e.detail.userInfo
     this.setData({
       userInfo: e.detail.userInfo,
       hasUserInfo: true
-    })
-  },
-  handleStopUseCarClick() { //停止使用
-    this.setData({
-      isUseingCar: false
     })
   },
   getLocation: function () { //获取位置

@@ -3,16 +3,14 @@
 <view class="container">
   <i-row class="header">
     <i-row class="head-img">
-      <i-col span="24">
-        <i-avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" size="large" shape="circle" wx-if="{{ hasHeadImage }}"></i-avatar>
-        <i-avatar size="large" shape="circle" wx-if="{{ !hasHeadImage }}">
-          {{ userName }}
-        </i-avatar>
+      <i-col offset="6" span="12">
+        <open-data type="userAvatarUrl"></open-data>
       </i-col>
+      <i-col span="6"></i-col>
     </i-row>
     <i-row class="head-title">
       <i-col span="24">
-        <text>用户名称</text>
+       <open-data type="userNickName" lang="zh_CN"></open-data>
       </i-col>
     </i-row>
     <i-row class="content-item">
@@ -20,7 +18,7 @@
         <text>性别：</text>
       </i-col>
       <i-col span="16" i-class="content-item-info">
-        <text>男</text>
+        <open-data type="userGender" lang="zh_CN"></open-data>
       </i-col>
     </i-row>
     <i-row class="content-item">
@@ -28,7 +26,7 @@
         <text>所在国家：</text>
       </i-col>
       <i-col span="16" i-class="content-item-info">
-        <text>中国</text>
+        <open-data type="userCountry" lang="zh_CN"></open-data>
       </i-col>
     </i-row>
     <i-row class="content-item">
@@ -36,7 +34,7 @@
         <text>所在省份：</text>
       </i-col>
       <i-col span="16" i-class="content-item-info">
-        <text>重庆</text>
+        <open-data type="userProvince" lang="zh_CN"></open-data>
       </i-col>
     </i-row>
     <i-row class="content-item">
@@ -44,7 +42,7 @@
         <text>所在城市：</text>
       </i-col>
       <i-col span="16" i-class="content-item-info">
-        <text>重庆</text>
+        <open-data type="userCity" lang="zh_CN"></open-data>
       </i-col>
     </i-row>
   </i-row>
@@ -55,3 +53,4 @@
     </i-tab-bar>
   </i-row>
 </view>
+  <i-toast id="toast" />

@@ -6,16 +6,16 @@
               <text>订单状态：</text>
             </view>
             <view class="text-r fl-1">
-              <text>进行中/已完成</text>
+              <text>{{ orderDetail.status.status_info }}</text>
             </view>
         </view>
         <view class="item-content">
           <view class="item-content-title">
             <view class="fl-1">
-              <text>订单编号: {{ index }}</text>
+              <text>订单编号: </text>
             </view>
             <view class="fl-1">
-              <text>123456789798</text>
+              <text>{{ orderDetail.order_number }}</text>
             </view>
           </view>
           <view class="item-content-content">
@@ -24,7 +24,7 @@
                   <text>开始骑行时间:</text>
                 </view>
                 <view class="fl-1">
-                  <text>2018-02-02 23:59:59</text>
+                  <text>{{ orderDetail.begin || '' }}</text>
                 </view>
               </view>
               <view class="content-stoptime content-item">
@@ -32,7 +32,7 @@
                   <text>停止骑行时间:</text>
                 </view>
                 <view class="fl-1">
-                  <text>2018-02-02 23:59:59</text>
+                  <text>{{ orderDetail.end || '' }}</text>
                 </view>
               </view>
               <view class="content-mileage content-item">
@@ -40,7 +40,33 @@
                   <text>骑行里程:</text>
                 </view>
                 <view class="fl-1">
-                  <text class="font-red"> 1.5km </text>
+                  <text class="font-red"> {{ orderDetail.meter }}M </text>
+                </view>
+              </view>
+
+              <view class="content-mileage content-item" wx-if="{{orderDetail.status.status == 4 || orderDetail.status.status == 1}}">
+                <view class="fl-1">
+                  <text>需支付金额:</text>
+                </view>
+                <view class="fl-1">
+                  <text class="font-red"> {{ orderDetail.price }}元(人民币) </text>
+                </view>
+              </view>
+
+              <view class="content-mileage content-item" wx-if="{{orderDetail.status.status == 3 || orderDetail.status.status == 2 }}">
+                <view class="fl-1">
+                  <text>金额:</text>
+                </view>
+                <view class="fl-1">
+                  <text class="font-red"> {{ orderDetail.price }}元(人民币) </text>
+                </view>
+              </view>
+
+              <view class="content-mileage content-item" wx-if="{{ orderDetail.status.status == 4 }}">
+                <view class="fl-1">
+                  <i-button bind:click="toPay"  type="warning" shape="circle" size="small">
+                    去支付
+                  </i-button>
                 </view>
               </view>
           </view>
@@ -51,3 +77,4 @@
      </map>
   </view>
 </view>
+<i-message id="message" />

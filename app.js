@@ -1,6 +1,7 @@
 //app.js
 const utils = require('./utils/util.js');
 const ajax = require('./utils/ajax.js');
+const { $Toast } = require('./dist/base/index.js');
 
 App({
   onLaunch: function () {
@@ -12,7 +13,8 @@ App({
     var storageKey = "location"
     wx.removeStorageSync(storageKey)
     wx.removeStorageSync(storageKey  + 'Error')
-    this.setWatcher(this.globalData, this.watch)
+    // this.setWatcher(this.globalData, this.watch)
+    
   },
   getClientHeight: function() {
     wx.getSystemInfo({    //获取系统屏幕高度，实现滚动view自适应
@@ -80,12 +82,9 @@ App({
     systemUserInfo: null,
     userInfo: null,
     isUsingCar: false,
-    nowOrderNumber:"",
+    nowOrderInfo: null,
     clientHeight: 0,
     session: null
-  },
-  getLocation: function(storageKey) {
-    utils.getLocationArrayToStorage(storageKey)
   },
   saveUserInfoToService: function() {
     wx.request({
@@ -108,44 +107,72 @@ App({
       }
     })
   },
-  /**
-     * 设置监听器
-     */
-  setWatcher(data, watch) { // 接收传过来的data对象和watch对象
-    Object.keys(watch).forEach(v => { // 将watch对象内的key遍历
-      this.observe(data, v, watch[v]); // 监听data内的v属性，传入watch内对应函数以调用
-    })
-  },
-  /**
-     * 监听属性 并执行监听函数
-     */
-  observe(obj, key, watchFun) {
-    var val = obj[key]; // 给该属性设默认值
-    var that = this
-    Object.defineProperty(obj, key, {
-      configurable: true,
-      enumerable: true,
-      set: function (value) {
-        watchFun(value, val, that); // 赋值(set)时，调用对应函数
-        val = value;
-      },
-      get: function () {
-        return val;
-      }
-    })
-  },
-  watch: {
-    isUsingCar: function (newValue, oldValue, that) {
-      if (newValue) {
-        //如果是在用车, 每隔一段时间就获取到定位信息
-        var interval= setInterval(() => {
-          that.getLocation(that.globalData.nowOrderNumber)
-        }, 60000)
-        that.data.interval = interval
-      } else {
-        clearInterval(that.data.interval)
-      }
-    }
-  }
+
+  // /**
+  //    * 设置监听器
+  //    */
+  // setWatcher(data, watch) { // 接收传过来的data对象和watch对象
+  //   Object.keys(watch).forEach(v => { // 将watch对象内的key遍历
+  //     this.observe(data, v, watch[v]); // 监听data内的v属性，传入watch内对应函数以调用
+  //   })
+  // },
+  // /**
+  //    * 监听属性 并执行监听函数
+  //    */
+  // observe(obj, key, watchFun) {
+  //   var val = obj[key]; // 给该属性设默认值
+  //   var that = this
+  //   Object.defineProperty(obj, key, {
+  //     configurable: true,
+  //     enumerable: true,
+  //     set: function (value) {
+  //       watchFun(value, val, that); // 赋值(set)时，调用对应函数
+  //       val = value;
+  //     },
+  //     get: function () {
+  //       return val;
+  //     }
+  //   })
+  // },
+  // watch: {
+  //   isUsingCar: function (newValue, oldValue, that) {
+  //     if (newValue) {
+  //       //如果是在用车, 每隔一段时间就获取到定位信息
+  //       var interval= setInterval(() => { //每分钟定位
+  //         wx.request({
+  //           url: ajax.ajaxBaseUrl + 'bicycle',
+  //           method: 'put',
+  //           data: {
+  //             token: wx.getStorageSync('systemUserInfo').token,
+  //             id: wx.getStorageSync('nowOrderInfo').id,
+  //             location: 1
+  //           },
+  //           header: {
+  //             'content-type': 'application/json' // 默认值
+  //           },
+  //           success(res) {
+  //             if (res.data.status == 3) {
+  //               $Toast({
+  //                 content: res.data.msg,
+  //                 icon: 'prompt',
+  //                 duration: 0,
+  //                 mask: false
+  //               });
+  //             }
+  //             if (!res.data.status) {
+  //               $Toast.hide();
+  //             }
+  //           },
+  //           fail(err) {
+  //             console.log(err)
+  //           }
+  //         })
+  //       }, 60000)
+  //       that.data.interval = interval
+  //     } else {
+  //       clearInterval(that.data.interval)
+  //     }
+  //   }
+  // }
 
 })

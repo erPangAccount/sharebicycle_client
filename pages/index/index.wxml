@@ -8,3 +8,4 @@
       </map>    
     </i-col>
   </i-row>
+  <i-toast id="toast" />

@@ -8,3 +8,4 @@
       </i-col>
     </i-row>
   </view>
+  <i-toast id="toast" />

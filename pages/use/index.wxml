@@ -1,12 +1,7 @@
 <view class="container">
   <view class="header">
     <i-row wx-if="{{isUsingCar == false}}"> 
-      <i-col span="12" i-class="col-class ">
-        <i-button bind:click="handleFindCarsButtonClick" type="success" shape="circle">
-          找车 
-        </i-button>
-      </i-col>
-      <i-col span="12" i-class="col-class">
+      <i-col span="24" i-class="col-class">
         <i-button bind:click="handleUseCarsButtonClick" type="success" shape="circle" size="small">
           用车
         </i-button>
@@ -26,23 +21,23 @@
     </i-row>
   </view>
   <view class="content">
-     <scroll-view scroll-y style="height:{{clientHeight ? clientHeight+'px' : 'auto'}} " bindscrolltoupper="handleFresh" bindscrolltolower="handleLoadMore" scroll-top="0" upper-threshold="50" lower-threshold="50" scroll-with-animation="true">
-      <view id="{{ index }}" class="scroll-view-item" bind:tap="handleToOrderInfo" data-id="{{ item }}"  wx:for="{{[1,2,3,4,5]}}" wx:for-index="index" wx:for-item="item">
+     <scroll-view scroll-y style="height:{{clientHeight ? clientHeight+'px' : 'auto'}} " bindscrolltoupper="handleFresh" bindscrolltolower="handleLoadMore" scroll-top="0" upper-threshold="-10" lower-threshold="50" scroll-with-animation="true">
+      <view id="{{ item.id }}" class="scroll-view-item" bind:tap="handleToOrderInfo" data-id="{{ item.id }}"  wx:for="{{ orderListData.data }}" wx:for-index="index" wx:for-item="item">
         <view class="item-title">
             <view class="text-l fl-1">
               <text>订单状态：</text>
             </view>
             <view class="text-r fl-1">
-              <text>进行中/已完成</text>
+              <text>{{ item.status.status_info }}</text>
             </view>
         </view>
         <view class="item-content">
           <view class="item-content-title">
             <view class="fl-1">
-              <text>订单编号: {{ index }}</text>
+              <text>订单编号: </text>
             </view>
             <view class="fl-1">
-              <text>123456789798</text>
+              <text>{{ item.order_number }}</text>
             </view>
           </view>
           <view class="item-content-content">
@@ -51,7 +46,7 @@
                   <text>开始骑行时间:</text>
                 </view>
                 <view class="fl-1">
-                  <text>2018-02-02 23:59:59</text>
+                  <text>{{ item.begin }}</text>
                 </view>
               </view>
               <view class="content-stoptime content-item">
@@ -59,7 +54,7 @@
                   <text>停止骑行时间:</text>
                 </view>
                 <view class="fl-1">
-                  <text>2018-02-02 23:59:59</text>
+                  <text>{{ item.end || '' }}</text>
                 </view>
               </view>
               <view class="content-mileage content-item">
@@ -67,7 +62,15 @@
                   <text>骑行里程:</text>
                 </view>
                 <view class="fl-1">
-                  <text class="font-red"> 1.5km </text>
+                  <text class="font-red"> {{ item.meter }}M </text>
+                </view>
+              </view>
+              <view class="content-mileage content-item">
+                <view class="fl-1">
+                  <text>金额:</text>
+                </view>
+                <view class="fl-1">
+                  <text class="font-red"> {{ item.price }}元(人民币) </text>
                 </view>
               </view>
           </view>
@@ -83,9 +86,6 @@
   </view>
 </view>
 
-<i-modal title="找 车" visible="{{ showFindCarModal }}" actions="{{ findCarModalButton }}" bind:click="handleFindCarMethod">
-    <view>请选择找车方式</view>
-</i-modal>
 <i-modal title="用 车" visible="{{ showUseCarModal }}" actions="{{ useCarModalButton }}" bind:click="handleUserCarMethod">
     <view>请选择用车方式</view>
 </i-modal>
@@ -97,8 +97,10 @@
 </i-modal>
 
 <i-modal title="订单结算" visible="{{ orderModalShow }}" actions="{{ orderModelButton }}" bind:click="handleHideOrderModel">
-    <view>此次预扣除 10 车豆；实际消费： 5 车豆 </view>
-    <view>开始时间： 2018-08-02 12：12：12</view>
-    <view>结束时间： 2018-08-02 14：14：14</view>
-    <view>里程： 12 km</view>
+    <view>此次实际消费： {{ nowOrderInfo.price }} 元(人民币) </view>
+    <view>开始时间： {{ nowOrderInfo.begin }}</view>
+    <view>结束时间： {{ nowOrderInfo.end }}</view>
+    <view>里程： {{ nowOrderInfo.meter }} M</view>
 </i-modal>
+<i-toast id="toast" />
+<i-message id="message" />

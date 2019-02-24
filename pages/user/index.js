@@ -6,8 +6,7 @@ Page({
    */
   data: {
     currentMenu: "mine",
-    hasHeadImage: false,
-    userName: '用'
+    hasHeadImage: false
   },
 
   /**

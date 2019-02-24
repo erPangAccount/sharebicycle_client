@@ -1,7 +1,8 @@
 // pages/order_detail/index.js
-const app = getApp()
-const utils = require('../../utils/util.js')
-
+const app = getApp();
+const utils = require('../../utils/util.js');
+const ajax = require('../../utils/ajax.js');
+const { $Message } = require('../../dist/base/index');
 Page({
 
   /**
@@ -12,7 +13,8 @@ Page({
     clientHeight: app.globalData.clientHeight - 130,
     location: {},
     locationArr: [],
-    polyline: []
+    polyline: [],
+    orderDetail: {}
   },
 
   /**
@@ -22,17 +24,10 @@ Page({
     this.setData({
       nowOrderId: options.id
     })
-
-    this.getLocation()
-
+    this.getOrderDetail()
   },
 
   onShow: function() {
-    //模拟假数据,实现地图的轨迹
-      this.setData({
-        locationArr: wx.getStorageSync('locationArray')
-      })
-    this.formatLocationData()
   },
 
   /**
@@ -41,20 +36,65 @@ Page({
   onReady: function () {
     
   },
-
-  getLocation: function () { //获取位置
-    var storageKey = "location"
-    var locationError = ""
-    utils.getLocationToStorage();
-    setTimeout(() => { //延迟半分钟处理
-      locationError = wx.getStorageSync(storageKey + 'Error');
-      this.setData({
-        location: wx.getStorageSync(storageKey)
-      })
-      if (!locationError) {
-        utils.stopLoading();
+  getOrderDetail: function () {
+    var that = this;
+    wx.request({
+      url: ajax.ajaxBaseUrl + 'bicycle_show',
+      method: 'get',
+      data: {
+        token: wx.getStorageSync('systemUserInfo').token,
+        id: this.data.nowOrderId
+      },
+      header: {
+        'content-type': 'application/json' // 默认值
+      },
+      success(res) {
+        if (!res.data.status) {
+        var location = res.data.data.location[0] || null;
+        if (!location) {
+          that.getLocation();
+        } else {
+          that.setData({
+            location: {
+              longitude: location.lng,
+              latitude: location.lat
+            }
+          });
+        }
+          that.setData({
+            orderDetail: res.data.data,
+            locationArr: res.data.data.location
+          })
+         that.formatLocationData()
+        } else {
+          $Message({
+            content: res.data.msg,
+            type: "error",
+            duration: 5
+          });
+        }
+      },
+      fail(err) {
+        console.log(err)
       }
-    }, 2000)
+    })
+  },
+  getLocation: function () { //获取位置
+    var that = this
+    wx.getLocation({
+      type: 'gcj02',
+      success: res => {
+        that.setData({
+          location: {
+            longitude: res.longitude,
+            latitude: res.latitude
+          }
+        })
+      },
+      fail: res => {
+        console.log(res);
+      }
+    })
   },
   formatLocationData: function () { //格式化数据 ,格式要求 https://developers.weixin.qq.com/miniprogram/dev/component/map.html#map  polyline属性说明
     var data = this.data.locationArr || []
@@ -68,14 +108,44 @@ Page({
     for(var i = 0; i < data.length; i++) {
       formatedData[0].points.push(
         {
-          longitude: data[i].longitude,
-          latitude: data[i].latitude
+          longitude: data[i].lng,
+          latitude: data[i].lat
         }
       )
     }
-
     this.setData({
       polyline: formatedData
+    })
+  },
+  toPay: function() {
+    var that = this;
+    wx.request({
+      url: ajax.ajaxBaseUrl + 'bicycle',
+      method: 'put',
+      data: {
+        token: wx.getStorageSync('systemUserInfo').token,
+        id: this.data.nowOrderId,
+        status: 3
+      },
+      header: {
+        'content-type': 'application/json' // 默认值
+      },
+      success(res) {
+        if (!res.data.status) {
+          that.setData({
+            orderDetail: res.data.data
+          })
+        } else {
+          $Message({
+            content: res.data.msg,
+            type: "error",
+            duration: 5
+          });
+        }
+      },
+      fail(err) {
+        console.log(err)
+      }
     })
   }
 })

@@ -1,28 +1,18 @@
 //index.js
 //获取应用实例
-const app = getApp()
-const ajaxa = require('./ajax.js');
-const utils = require('../../utils/util.js')
+const app = getApp();
+const ajax = require('../../utils/ajax.js');
+const utils = require('../../utils/util.js');
+const { $Toast } = require('../../dist/base/index');
+const { $Message } = require('../../dist/base/index');
 
 Page({
   data: {
-    clientHeight: 0,
     isUsingCar: app.globalData.isUsingCar,
+    clientHeight: 0,
     currentMenu: "homepage",
-    showFindCarModal: false,
     showUseCarModal: false,
     orderModalShow: false,
-    findCarModalButton: [
-      {
-        name: '扫码找车'
-      },
-      {
-        name: '车号找车'
-      },
-      {
-        name: '取消'
-      }
-    ],
     useCarModalButton: [
       {
         name: '扫码用户'
@@ -51,9 +41,8 @@ Page({
     beforModel: "",
     inputModelTitle: "",
     inputCarNumber: "",
-    location:{},
-    storageKeys: "",
-    storageDatas: ""
+    orderListData: {},
+    nowOrderInfo: {}
   },
   //事件处理函数
   onLoad: function () {
@@ -63,85 +52,82 @@ Page({
             clientHeight: res.windowHeight - 70 - 50 
           });
         }
-      })
-
-
-    if (app.globalData.userInfo) {
+    });
+    this.setWatcher(app.globalData, this.watch)
+  },
+  onShow: function() {
+    var nowOrderInfo = wx.getStorageSync('nowOrderInfo');
+    if (nowOrderInfo) {
+      app.globalData.isUsingCar = true;
       this.setData({
-        userInfo: app.globalData.userInfo,
-        hasUserInfo: true
+        isUsingCar: true,
+        nowOrderInfo: nowOrderInfo
       })
-    } else if (this.data.canIUse){
-      // 由于 getUserInfo 是网络请求，可能会在 Page.onLoad 之后才返回
-      // 所以此处加入 callback 以防止这种情况
-      app.userInfoReadyCallback = res => {
-        this.setData({
-          userInfo: res.userInfo,
-          hasUserInfo: true
-        })
-      }
     } else {
-      // 在没有 open-type=getUserInfo 版本的兼容处理
-      wx.getUserInfo({
-        success: res => {
-          app.globalData.userInfo = res.userInfo
-          this.setData({
-            userInfo: res.userInfo,
-            hasUserInfo: true
-          })
-        }
+      app.globalData.isUsingCar = false ;
+      this.setData({
+        isUsingCar: false,
+        nowOrderInfo: {}
       })
     }
+    this.getOrderList();
   },
-  getUserInfo: function(e) {
-    console.log(e)
-    app.globalData.userInfo = e.detail.userInfo
-    this.setData({
-      userInfo: e.detail.userInfo,
-      hasUserInfo: true
+  getOrderList: function(callBack = null, page = 1) { //获取订单列表
+    var that = this
+    wx.request({
+      url: ajax.ajaxBaseUrl + 'bicycle',
+      method: 'get',
+      data: {
+        token: wx.getStorageSync('systemUserInfo').token,
+        page: page
+      },
+      header: {
+        'content-type': 'application/json' // 默认值
+      },
+      success(res) {
+        if (!res.data.status) {
+          if (page != 1) {
+              var orderList = that.data.orderListData.data;
+              var newData = res.data.data
+              for (var i in newData.data) {
+                orderList.push(newData.data[i]);
+              }
+              newData.data = orderList;
+              that.setData({
+                orderListData: newData
+              })
+          } else {
+            that.setData({
+              orderListData: res.data.data
+            })
+          }
+          
+          if (callBack != null) {
+              callBack
+          }
+        } else {
+          $Message({
+            content: res.data.msg,
+            type: "error",
+            duration: 5
+          });
+        }
+      },
+      fail(err) {
+        console.log(err)
+      }
     })
   },
-  handleFindCarsButtonClick: function() { //找车按钮
-    this.setData({
-      showFindCarModal: true
-    })
-  },  
   handleUseCarsButtonClick: function() {  //用车按钮 
     this.setData({
       showUseCarModal: true
     })
-  },
-  handleFindCarMethod: function({ detail }) { //选择找车方式
-    const index = detail.index
-    switch (index) {
-      case 0:
-        this.scanCode();
-        break;
-      case 1:
-        this.setData({
-          showInputCarNumberModel: true,
-          beforModel: "find_car",
-          inputModelTitle: "请输入需要寻找的车号！"
-        })
-        console.log('车号')
-        break;
-      case 2:
-        console.log('取消')
-        this.setData({
-          showFindCarModal: false
-        })
-        break;
-    }
   },
   handleUserCarMethod: function({ detail }) { //选择用车方式
     const index = detail.index
     switch (index) {
       case 0:
         this.scanCode();
-        app.globalData.isUsingCar = true;
-        this.setData({
-          isUsingCar: app.globalData.isUsingCar
-        })
         break;
       case 1:
         this.setData({
@@ -149,10 +135,8 @@ Page({
           beforModel: "use_car",
           inputModelTitle: "请输入需要使用的车号！"
         })
-        console.log('车号')
         break;
       case 2:
-        console.log('取消')
         this.setData({
           showUseCarModal: false
         })
@@ -160,13 +144,10 @@ Page({
     }
   },
   handleHideOrderModel: function() {  //关闭订单结算提示
-    this.setData({
-      orderModalShow: false
-    })
+    this.pay()
   },
   handleInputCarNumberMethod: function({ detail }) {  //输入车号
     this.setData({
-      showFindCarModal: false,
       showUseCarModal: false,
       showInputCarNumberModel: false
     })
@@ -174,81 +155,63 @@ Page({
     switch (index) {
       case 0:
         if (this.data.beforModel.length) { //存在上一个模型
-          if (this.data.beforModel == 'find_car') { //找车
-            console.log('find car ajax')
-          } else if (this.data.beforModel == 'use_car') { //用车
-            console.log('use car ajax')
-            app.globalData.isUsingCar = true;
-            this.setData({
-              isUsingCar: app.globalData.isUsingCar
-            })
+          if (this.data.beforModel == 'use_car') { //用车
+            // this.useCar(this.data.inputCarNumber)
+            this.useCar('001')
+            var that = this;
+            setTimeout(function() {
+              that.setData({
+                  isUsingCar: app.globalData.isUsingCar
+                });
+            }, 200);
           }
         }
         break;
-      case 1:
-        if (this.data.beforModel.length) { //存在上一个模型
-          if (this.data.beforModel == 'find_car') { //找车
-            this.setData({
-              showFindCarModal: true
-            })
-          } else if (this.data.beforModel == 'use_car') { //用车
-            this.setData({
-              showUseCarModal: true
-            })
-          }
-        }
-        break;
+      // case 1:
+      //   if (this.data.beforModel.length) { //存在上一个模型
+      //     if (this.data.beforModel == 'use_car') { //用车
+      //       this.setData({
+      //         showUseCarModal: true
+      //       })
+      //     }
+      //   }
+      //   break;
     }
   },
   handleStopUseCarClick() { //停止使用
-    app.globalData.isUsingCar = false;
-    this.setData({
-      isUsingCar: app.globalData.isUsingCar,
-      orderModalShow: true
-    })
-    //获取到所有未保存的订单数据,发送后台
-    this.getNotSaveToBackground()
-    setTimeout(() => {
-      //获取数据
-      var storages = this.data.storageDatas
-      //向后台发送数据
-
-      //pass
-
-      //成功清理当前订单信息,写在成功回调中
-      this.clearStorages(this.data.storageKeys)
-    }, 500)
-  },
-  getNotSaveToBackground: function () {  //获取没有保存到后台的所有订单数据
-    var storageKeys = [];
-    var storageDatas = [];
-    var that = this;
-    wx.getStorageInfo({
-      success: res => {
-        storageKeys = res.keys.filter(key => {
-          var filterMap = [
-            'location'
-          ]
-          if (filterMap.indexOf(key) == -1) {
-            //不存在于比较数组中 
-            return true;
-          } else {
-            return false;
-          }
-        })
-        if (storageKeys.length) {
-          storageKeys.forEach(key => {
-            var itemData = wx.getStorageSync(key)
-            if (itemData) {
-              storageDatas.push(itemData)
-            }
-          })
+    var that = this
+    wx.request({
+      url: ajax.ajaxBaseUrl + 'bicycle',
+      method: 'PUT',
+      data: {
+        token: wx.getStorageSync('systemUserInfo').token,
+        status: 4,
+        id: wx.getStorageSync('nowOrderInfo').id,
+      },
+      header: {
+        'content-type': 'application/json' // 默认值
+      },
+      success(res) {
+        if (!res.data.status) {
+          that.setData({
+            nowOrderInfo: res.data.data,
+            isUsingCar: false,
+            orderModalShow: true
+          });
+          app.globalData.isUsingCar = false;
+          wx.removeStorageSync('nowOrderInfo');
+        } else {
+          $Message({
+            content: res.data.msg,
+            type: "error",
+            duration: 5
+          });
         }
-        that.data.storageKeys = storageKeys
-        that.data.storageDatas = storageDatas
+      },
+      fail(err) {
+        console.log(err)
       }
     })
-
   },
   clearStorages: function(keys) { //清理指定keys的本地缓存
     if (!Array.isArray(keys)) { //不是数组转换为数组
@@ -259,11 +222,6 @@ Page({
 
     keys.forEach(key => { //遍历指定需要删除缓存的key，逐个删除
       wx.removeStorageSync(key) 
-    })
-  },
-  handleOrderListClick() {
-    wx.navigateTo({
-      url: 'pages/order/index'
     })
   },
   handleChange({ detail }) {
@@ -285,24 +243,33 @@ Page({
   scanCode: function() {
     wx.scanCode({
       success: res => {
-        console.log(res)
+        if (res.errMsg == "scanCode:ok") {  //扫描成功
+          var carNumber = res.result.split('/').pop()
+          this.useCar(carNumber)
+          var that = this;
+          setTimeout(function () {
+            that.setData({
+              isUsingCar: app.globalData.isUsingCar
+            });
+          }, 200);
+        }
       }
     })
   },
   handleFresh: function () {
-    console.log('refresh');
     utils.loading("刷新中……");
-    setTimeout(() => {
-      utils.stopLoading();
-    }, 5000)
+    this.getOrderList(utils.stopLoading());
   },
   handleLoadMore: function () {
-    console.log('load more');
-    utils.loading("加载更多中……");
-    setTimeout(() => {
-      utils.stopLoading();
-    }, 5000)
-
+    if (this.data.orderListData.current_page <= this.data.orderListData.last_page) {
+      utils.loading("加载更多中……");
+      this.getOrderList(utils.stopLoading(), this.data.orderListData.current_page + 1)
+    } else {
+      utils.loading("暂时没有更多数据！");
+      setTimeout(() => {
+        utils.stopLoading();
+      }, 200)
+    }
   },
   handleToOrderInfo: function (event) {
     var datas = event.currentTarget
@@ -314,5 +281,140 @@ Page({
     wx.navigateTo({
       url: '../return/index',
     })
+  },
+  useCar: function (carNumber) {
+    wx.request({
+      url: ajax.ajaxBaseUrl + 'bicycle',
+      method: 'post',
+      data: {
+        carNumber: carNumber,
+        token: wx.getStorageSync('systemUserInfo').token
+      },
+      header: {
+        'content-type': 'application/json' // 默认值
+      },
+      success(res) {
+        if (!res.data.status) {
+          app.globalData.isUsingCar = true;
+          wx.setStorageSync('nowOrderInfo', res.data.data)
+        } else {
+          $Message({
+            content: res.data.msg,
+            type: "error",
+            duration: 5
+          });
+        }
+      },
+      fail(err) {
+        console.log(err)
+      }
+    })
+  },
+  pay: function () {
+    var that = this;
+    wx.request({
+      url: ajax.ajaxBaseUrl + 'bicycle',
+      method: 'put',
+      data: {
+        token: wx.getStorageSync('systemUserInfo').token,
+        id: this.data.nowOrderInfo.id,
+        status: 3
+      },
+      header: {
+        'content-type': 'application/json' // 默认值
+      },
+      success(res) {
+        if (!res.data.status) {
+          that.setData({
+            nowOrderInfo: res.data.data,
+            orderModalShow: false
+          })
+          that.getOrderList()
+        } else {
+          $Message({
+            content: res.data.msg,
+            type: "error",
+            duration: 5
+          });
+        }
+      },
+      fail(err) {
+        console.log(err)
+      }
+    })
+  },
+
+
+
+  /**
+     * 设置监听器
+     */
+  setWatcher(data, watch) { // 接收传过来的data对象和watch对象
+    Object.keys(watch).forEach(v => { // 将watch对象内的key遍历
+      this.observe(data, v, watch[v]); // 监听data内的v属性，传入watch内对应函数以调用
+    })
+  },
+  /**
+     * 监听属性 并执行监听函数
+     */
+  observe(obj, key, watchFun) {
+    var val = obj[key]; // 给该属性设默认值
+    var that = this
+    Object.defineProperty(obj, key, {
+      configurable: true,
+      enumerable: true,
+      set: function (value) {
+        watchFun(value, val, that); // 赋值(set)时，调用对应函数
+        val = value;
+      },
+      get: function () {
+        return val;
+      }
+    })
+  },
+  watch: {
+    isUsingCar: function (newValue, oldValue, that) {
+      if (newValue) {
+        //如果是在用车, 每隔一段时间就获取到定位信息
+        var interval = setInterval(() => { //每分钟定位
+          wx.request({
+            url: ajax.ajaxBaseUrl + 'bicycle',
+            method: 'put',
+            data: {
+              token: wx.getStorageSync('systemUserInfo').token,
+              id: wx.getStorageSync('nowOrderInfo').id,
+              location: 1
+            },
+            header: {
+              'content-type': 'application/json' // 默认值
+            },
+            success(res) {
+              if (res.data.status == 3) {
+                $Toast({
+                  content: res.data.msg,
+                  icon: 'prompt',
+                  duration: 0,
+                  mask: false
+                });
+              } else if (!res.data.status) {
+                $Toast.hide();
+              } else {
+                $Message({
+                  content: res.data.msg,
+                  type: "error",
+                  duration: 5
+                });
+              }
+            },
+            fail(err) {
+              console.log(err)
+            }
+          })
+        }, 60000)
+        that.data.interval = interval
+      } else {
+        clearInterval(that.data.interval)
+      }
+    }
   }
 })
