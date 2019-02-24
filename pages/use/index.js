@@ -180,6 +180,7 @@ Page({
   },
   handleStopUseCarClick() { //停止使用
     var that = this
+    utils.loading("加载中……");
     wx.request({
       url: ajax.ajaxBaseUrl + 'bicycle',
       method: 'PUT',
@@ -192,6 +193,7 @@ Page({
         'content-type': 'application/json' // 默认值
       },
       success(res) {
+        utils.stopLoading();
         if (!res.data.status) {
           that.setData({
             nowOrderInfo: res.data.data,
