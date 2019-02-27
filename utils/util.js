@@ -35,11 +35,11 @@ const getLocationArrayToStorage = (storageKey) => { //获取到位置数据并�
 }
 
 const getLocationToStorage = () => { //获取到位置数据并保存到缓存中
+  loading('获取位置中……')
   var storageKey = "location"
   wx.getLocation({
     type: 'gcj02', 
     success: res => {
-      loading('获取位置中……')
       wx.setStorageSync(storageKey, res)
     },
     fail: res => {

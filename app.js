@@ -7,7 +7,7 @@ App({
   onLaunch: function () {
     //获取系统屏幕高度
     this.getClientHeight()
-    this.login()
+    this.login()  //调用微信api 实现微信登录流程
     
     // 清除地址缓存
     var storageKey = "location"
@@ -34,7 +34,7 @@ App({
     wx.login({
       success: res => {
         wx.request({
-          url: ajax.ajaxBaseUrl + 'session',
+          url: ajax.ajaxBaseUrl + 'session',   
           method: 'post',
           data: {
             code: res.code
@@ -43,7 +43,7 @@ App({
             'content-type': 'application/json' // 默认值
           },
           success(res) {
-            if (!res.data.status) {
+            if (!res.data.status) { 
               that.globalData.session = res.data.data
               that.getUserInfo()
             }
@@ -71,6 +71,7 @@ App({
               if (this.userInfoReadyCallback) {
                 this.userInfoReadyCallback(res)
               }
+              
               this.saveUserInfoToService()
             }
           })
@@ -107,7 +108,6 @@ App({
       }
     })
   },
-
   // /**
   //    * 设置监听器
   //    */

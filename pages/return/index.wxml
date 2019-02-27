@@ -6,8 +6,8 @@
         <view slot="false">否</view>
       </i-switch>
     </i-cell>
-    <i-cell title="取消订单">
-      <i-input value="{{ remark }}"  bind:change="handleRemarkChange" type="textarea"  placeholder="请输入车况详情！" maxlength="50" />
+    <i-cell title="车辆情况反馈">
+      <i-input value="{{ remark }}"  bind:change="handleRemarkChange" type="textarea"  placeholder="请输入车况详情！"/>
     </i-cell>
     <i-cell>
       <i-button bind:click="formSubmit" type="success" shape="circle" size="large">提 交</i-button>

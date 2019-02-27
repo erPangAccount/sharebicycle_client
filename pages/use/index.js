@@ -53,7 +53,7 @@ Page({
           });
         }
     });
-    this.setWatcher(app.globalData, this.watch)
+    this.setWatcher(app.globalData, this.watch) //监听车辆使用过程中，对后台发起车辆定位请求
   },
   onShow: function() {
     var nowOrderInfo = wx.getStorageSync('nowOrderInfo');
@@ -70,7 +70,8 @@ Page({
         nowOrderInfo: {}
       })
     }
-    this.getOrderList();
+
+    this.getOrderList();    //向后台获取订单列表
   },
   getOrderList: function(callBack = null, page = 1) { //获取订单列表
     var that = this
@@ -158,12 +159,6 @@ Page({
           if (this.data.beforModel == 'use_car') { //用车
             // this.useCar(this.data.inputCarNumber)
             this.useCar('001')
-            var that = this;
-            setTimeout(function() {
-              that.setData({
-                  isUsingCar: app.globalData.isUsingCar
-                });
-            }, 200);
           }
         }
         break;
@@ -195,13 +190,13 @@ Page({
       success(res) {
         utils.stopLoading();
         if (!res.data.status) {
+          app.globalData.isUsingCar = false;
+          wx.removeStorageSync('nowOrderInfo');
           that.setData({
             nowOrderInfo: res.data.data,
             isUsingCar: false,
             orderModalShow: true
           });
-          app.globalData.isUsingCar = false;
-          wx.removeStorageSync('nowOrderInfo');
         } else {
           $Message({
             content: res.data.msg,
@@ -213,17 +208,6 @@ Page({
       fail(err) {
         console.log(err)
       }
-    })
-  },
-  clearStorages: function(keys) { //清理指定keys的本地缓存
-    if (!Array.isArray(keys)) { //不是数组转换为数组
-      keys = [
-        keys
-      ]
-    }
-
-    keys.forEach(key => { //遍历指定需要删除缓存的key，逐个删除
-      wx.removeStorageSync(key) 
     })
   },
   handleChange({ detail }) {
@@ -246,7 +230,7 @@ Page({
     wx.scanCode({
       success: res => {
         if (res.errMsg == "scanCode:ok") {  //扫描成功
-          var carNumber = res.result.split('/').pop()
+          var carNumber = res.result.split('/').pop() //获取到对应的车号
           this.useCar(carNumber)
           var that = this;
           setTimeout(function () {
@@ -263,28 +247,30 @@ Page({
     this.getOrderList(utils.stopLoading());
   },
   handleLoadMore: function () {
-    if (this.data.orderListData.current_page <= this.data.orderListData.last_page) {
+    if (this.data.orderListData.current_page < this.data.orderListData.last_page) {
       utils.loading("加载更多中……");
-      this.getOrderList(utils.stopLoading(), this.data.orderListData.current_page + 1)
+      this.getOrderList(utils.stopLoading(), this.data.orderListData.current_page + 1)  //在请求完成后需要执行的代码，请求的页码
     } else {
       utils.loading("暂时没有更多数据！");
       setTimeout(() => {
         utils.stopLoading();
-      }, 200)
+      }, 500)
     }
   },
-  handleToOrderInfo: function (event) {
+  handleToOrderInfo: function (event) {//跳转到订单详情
     var datas = event.currentTarget
     wx.navigateTo({
       url: '../order_detail/index?id=' + datas['id'],
     })
   },
-  handleReturnError: function() {
+  handleReturnError: function() { //跳转到反馈页面
     wx.navigateTo({
       url: '../return/index',
     })
   },
   useCar: function (carNumber) {
+    var that = this;
+    utils.loading('加载中……');
     wx.request({
       url: ajax.ajaxBaseUrl + 'bicycle',
       method: 'post',
@@ -296,9 +282,13 @@ Page({
         'content-type': 'application/json' // 默认值
       },
       success(res) {
+        utils.stopLoading();
         if (!res.data.status) {
           app.globalData.isUsingCar = true;
           wx.setStorageSync('nowOrderInfo', res.data.data)
+          that.setData({
+            isUsingCar: true
+          });
         } else {
           $Message({
             content: res.data.msg,
@@ -328,7 +318,7 @@ Page({
       success(res) {
         if (!res.data.status) {
           that.setData({
-            nowOrderInfo: res.data.data,
+            nowOrderInfo: {},
             orderModalShow: false
           })
           that.getOrderList()
@@ -376,6 +366,7 @@ Page({
   },
   watch: {
     isUsingCar: function (newValue, oldValue, that) {
+      console.log(newValue);
       if (newValue) {
         //如果是在用车, 每隔一段时间就获取到定位信息
         var interval = setInterval(() => { //每分钟定位
