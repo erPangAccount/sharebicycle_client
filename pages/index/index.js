@@ -14,6 +14,7 @@ Page({
   //事件处理函数
   onLoad: function () {
     if (app.globalData.userInfo) {
+      app.saveUserInfoToService();
     } else {
       // 在没有 open-type=getUserInfo 版本的兼容处理
       wx.getUserInfo({
@@ -23,6 +24,8 @@ Page({
             userInfo: res.userInfo,
             hasUserInfo: true
           })
+
+          app.saveUserInfoToService();
         }
       })
     }
@@ -76,7 +79,8 @@ Page({
     // 1000 = 1秒
   },
   hanldeToUseOrFindCar: function() {  //跳转到用车 找车按钮页面
-    if (wx.getStorageInfoSync('systemUserInfo')) {
+    console.log(wx.getStorageSync('systemUserInfo'));
+    if (wx.getStorageSync('systemUserInfo')) {
       wx.navigateTo({
         url: '../use/index',
       })
