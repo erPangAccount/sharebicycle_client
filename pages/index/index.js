@@ -3,6 +3,7 @@
 const app = getApp()
 const utils = require('../../utils/util.js');
 const { $Toast } = require('../../dist/base/index');
+const { $Message } = require('../../dist/base/index');
 
 Page({
   data: {
@@ -24,7 +25,6 @@ Page({
             userInfo: res.userInfo,
             hasUserInfo: true
           })
-
           app.saveUserInfoToService();
         }
       })
@@ -51,6 +51,7 @@ Page({
     })
   },
   getLocation: function () { //获取位置
+    var that = this;
     var storageKey = "location"
     var locationError = ""
     utils.loading('获取位置中……');
@@ -64,10 +65,19 @@ Page({
       },
       fail: res => {
         $Message({
-          content: res,
+          content: res.errMsg,
           type: "error",
           duration: 5
         });
+        wx.openSetting({
+          success(res) {
+            console.log(res.authSetting)
+            res.authSetting = {
+              "scope.userInfo": true,
+              "scope.userLocation": true
+            }
+          }
+        })
       }
     })
     setTimeout(() => {

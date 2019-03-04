@@ -9,3 +9,4 @@
     </i-col>
   </i-row>
   <i-toast id="toast" />
+<i-message id="message" />
